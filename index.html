@@ -95,7 +95,7 @@
 </head>
 <body>
   <h1>Format ISBN</h1>
-  <p>Découpez un code ISBN-13 en segments lisibles.</p>
+  <p>Ce module vous permet de visualiser la structure d’un code ISBN-13 en le découpant en segments lisibles.</p>
 
   <input type="text" id="isbnFormat" placeholder="9782958563011" />
   <button onclick="formaterISBN()">Formater</button>
@@ -103,7 +103,7 @@
   <div id="resultatFormat" class="resultat"></div>
 
   <h2>Recherche d’informations</h2>
-  <p>Obtenez les détails d’un livre à partir de son ISBN.</p>
+  <p>Obtenez les métadonnées d’un livre à partir de son ISBN (titre, auteur, éditeur, couverture…)</p>
 
   <input type="text" id="isbnRecherche" placeholder="9782958563011" />
   <button onclick="rechercherLivre()">Rechercher</button>
@@ -133,7 +133,7 @@
         Zone : ${zone}<br>
         Éditeur : ${editeur}<br>
         Publication : ${publication}<br>
-        Clé : ${cle}
+        Clé de contrôle : ${cle}
       `;
     }
 
@@ -156,6 +156,7 @@
               <a href="https://www.worldcat.org/isbn/${isbn}" target="_blank">WorldCat</a>
               <a href="https://www.sudoc.fr/${isbn}" target="_blank">SUDOC</a>
               <a href="https://gallica.bnf.fr/chercher?q=${isbn}" target="_blank">Gallica</a>
+              <a href="https://archive.org/search?query=isbn:${isbn}" target="_blank">Internet Archive</a>
             </div>
           `;
           return;
