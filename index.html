@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Formatteur ISBN</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f2f5fa;
+      text-align: center;
+      padding: 3em;
+    }
+    input, button {
+      font-size: 1.2em;
+      padding: 0.6em;
+      margin: 0.5em;
+    }
+    .resultat {
+      margin-top: 1em;
+      font-size: 1.1em;
+      background: white;
+      padding: 1em;
+      border-radius: 6px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔢 Format ISBN</h1>
+  <p>Colle ton ISBN brut (13 chiffres) :</p>
+  <input type="text" id="isbn" placeholder="ex. 9782958563011" />
+  <button onclick="formaterISBN()">Formater</button>
+
+  <div id="resultat" class="resultat"></div>
+
+  <script>
+    function formaterISBN() {
+      let brut = document.getElementById("isbn").value.replace(/[^0-9]/g, "");
+      if (brut.length !== 13) {
+        document.getElementById("resultat").innerText = "❌ ISBN invalide : il faut 13 chiffres.";
+        return;
+      }
+
+      // Découpe personnalisable
+      let prefixe = brut.slice(0,3);
+      let zone = brut[3];
+      let editeur = brut.slice(4,9); // ← ajuste ici selon ton bloc réel
+      let publication = brut.slice(9,12);
+      let cle = brut[12];
+
+      let isbn_formate = `${prefixe}-${zone}-${editeur}-${publication}-${cle}`;
+      document.getElementById("resultat").innerHTML =
+        `<strong>ISBN formaté :</strong> ${isbn_formate}<br />
+         <strong>Blocs :</strong><br />
+         Préfixe : ${prefixe}<br />
+         Zone : ${zone}<br />
+         Éditeur : ${editeur}<br />
+         Publication : ${publication}<br />
+         Clé : ${cle}`;
+    }
+  </script>
+
+  <footer style="margin-top:3em; font-size: 0.9em; color:#666;">
+    Outil ISBN par [Ton nom ou pseudo] – Projet personnel ✍️
+  </footer>
+</body>
+</html>
