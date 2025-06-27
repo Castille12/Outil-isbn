@@ -19,19 +19,12 @@
     }
 
     h1, h2 {
+      font-size: 2em;
       font-weight: 600;
       margin-bottom: 0.5em;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-    }
-
-    h1 {
-      font-size: 2em;
-    }
-
-    h2 {
-      font-size: 1.2em;
-      margin-top: 3em;
+      text-align: center;
     }
 
     p {
@@ -82,6 +75,25 @@
       text-decoration: underline;
     }
 
+    .isbn-info {
+      margin-top: 4em;
+      font-size: 1em;
+      line-height: 1.6;
+      color: #222;
+    }
+
+    .isbn-info h2 {
+      font-size: 1.2em;
+      text-align: left;
+      margin-bottom: 0.5em;
+    }
+
+    .logo {
+      display: block;
+      margin: 0 auto 1em auto;
+      width: 96px;
+    }
+
     footer {
       margin-top: 4em;
       font-size: 0.9em;
@@ -94,7 +106,7 @@
 </head>
 <body>
 
-  <img src="LogoISBN_1.svg" alt="Logo ISBN – Formateur" style="width:64px; margin-bottom: 0.5em;">
+  <img src="LogoISBN_1.svg" alt="Logo ISBN – Formateur" class="logo">
   <h1>Format ISBN</h1>
   <p>Ce module vous permet de visualiser la structure d’un code ISBN-13 en le découpant en segments lisibles.</p>
 
@@ -103,7 +115,7 @@
 
   <div id="resultatFormat" class="resultat"></div>
 
-  <img src="LogoISBN.svg" alt="Logo ISBN – Recherche" style="width:64px; margin:3em 0 0.5em 0;">
+  <img src="LogoISBN.svg" alt="Logo ISBN – Recherche" class="logo">
   <h2>Recherche d’informations</h2>
   <p>Obtenez les métadonnées d’un livre à partir de son ISBN (titre, auteur, éditeur, couverture…)</p>
 
@@ -111,6 +123,18 @@
   <button onclick="rechercherLivre()">Rechercher</button>
 
   <div id="resultatRecherche" class="resultat"></div>
+
+  <section class="isbn-info">
+    <h2>Qu’est-ce que l’ISBN ?</h2>
+    <p>
+      L’ISBN (International Standard Book Number) est un identifiant numérique unique attribué à chaque édition d’un livre.  
+      Il permet aux éditeurs, libraires, bibliothèques et lecteurs d’identifier précisément une publication.  
+      Un ISBN-13 est composé de cinq éléments : préfixe (978 ou 979), zone linguistique, éditeur, numéro de publication, et chiffre de contrôle.
+    </p>
+    <p style="font-size: 0.9em; color: #666;">
+      Source : <a href="https://www.afnil.org/isbn/" target="_blank">AFNIL – Agence francophone pour la numérotation internationale du livre</a>
+    </p>
+  </section>
 
   <script>
     function formaterISBN() {
