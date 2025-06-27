@@ -4,207 +4,121 @@
   <meta charset="UTF-8" />
   <title>ISBN – Castillone</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    @font-face {
-      font-family: 'Futura';
-      src: local('Futura PT'), local('Futura'), sans-serif;
-    }
 
+  <!-- Librairies pour OCR et scan -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.0.2/tesseract.min.js"></script>
+  <script src="https://unpkg.com/@ericblade/quagga2/dist/quagga.js"></script>
+
+  <style>
     body {
-      margin: 0;
-      padding: 4em 1em;
-      background-color: #ffffff;
-      font-family: 'Space Grotesk', sans-serif;
-      color: #111;
+      font-family: 'Arial', sans-serif;
       max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
+      margin: auto;
+      padding: 2em;
       line-height: 1.6;
+      background: #fff;
+      color: #111;
     }
 
     h1, h2 {
-      font-family: 'Futura', sans-serif;
-      font-size: 2em;
-      font-weight: 600;
-      margin-bottom: 0.5em;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      font-size: 1.5em;
+      margin-top: 2em;
       text-align: center;
     }
 
-    p {
-      font-size: 1.1em;
-      margin-bottom: 2em;
-    }
-
     input, button {
-      font-size: 1em;
-      padding: 0.6em 1em;
-      border: 1px solid #ccc;
-      border-radius: 0;
-      margin-bottom: 1em;
       width: 100%;
-      box-sizing: border-box;
-    }
-
-    button {
-      background-color: #111;
-      color: #fff;
-      border: none;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #333;
+      padding: 0.7em;
+      margin-top: 1em;
+      font-size: 1em;
     }
 
     .resultat {
-      margin-top: 1.5em;
-      background: #f7f7f7;
-      padding: 1.5em;
-      font-size: 1em;
-      border: 1px solid #e0e0e0;
-      margin-bottom: 2.5em;
+      background: #f5f5f5;
+      padding: 1em;
+      margin-top: 1em;
+      border: 1px solid #ccc;
     }
 
-    .resultat-contraste {
-      background: #eef2f5;
-      border: 1px solid #ccd5db;
+    #previewImage {
+      max-width: 100%;
+      margin-top: 1em;
+      border: 1px dashed #ccc;
+      display: none;
     }
 
-    .isbn-info {
-      margin-top: 4em;
-      font-size: 1em;
-      line-height: 1.6;
-      color: #222;
+    #video {
+      width: 100%;
+      display: none;
+      margin-top: 1em;
     }
 
-    .isbn-info h2 {
-      font-size: 1.2em;
-      text-align: left;
-      margin-bottom: 0.5em;
+    #scan-options {
+      display: flex;
+      flex-direction: column;
+      gap: 1em;
+      margin-top: 2em;
     }
 
-    .logo {
-      display: block;
-      margin: 0 auto 1em auto;
-      width: 160px;
-    }
-
-    footer {
-      margin-top: 4em;
-      font-size: 0.9em;
-      color: #666;
-      text-align: left;
-      border-top: 1px solid #eee;
-      padding-top: 1em;
+    button:hover {
+      background: #333;
+      color: white;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
-  <img src="LogoISBN_1.svg" alt="Logo ISBN – Formateur" class="logo">
-  <h1>Format ISBN</h1>
-  <p>Ce module vous permet de visualiser la structure d’un code ISBN-13 en le découpant en segments lisibles, avec explication et métadonnées si disponibles.</p>
+<h1>ISBN – Détection visuelle</h1>
 
-  <input type="text" id="isbnFormat" placeholder="9782958563011" />
-  <button onclick="formaterISBN()">Formater</button>
+<div id="scan-options">
+  <button onclick="startScanner()">📷 Scanner un code-barres avec la caméra</button>
+  <input type="file" id="imageInput" accept="image/*" />
+</div>
 
-  <div id="resultatFormat" class="resultat resultat-contraste"></div>
+<video id="video"></video>
+<img id="previewImage" alt="Prévisualisation" />
 
-  <img src="LogoISBN.svg" alt="Logo ISBN – Recherche" class="logo">
-  <h2>Recherche d’informations</h2>
-  <p>Obtenez les métadonnées d’un livre à partir de son ISBN (titre, auteur, éditeur, couverture…)</p>
+<div id="resultatVisuel" class="resultat"></div>
 
-  <input type="text" id="isbnRecherche" placeholder="9782958563011" />
-  <button onclick="rechercherLivre()">Rechercher</button>
+<script>
+  const video = document.getElementById("video");
+  const previewImage = document.getElementById("previewImage");
+  const resultat = document.getElementById("resultatVisuel");
 
-  <div id="resultatRecherche" class="resultat"></div>
+  // Démarre le scanner avec QuaggaJS (caméra)
+  function startScanner() {
+    video.style.display = "block";
+    resultat.innerText = "📷 Initialisation de la caméra…";
 
-  <section class="isbn-info">
-    <h2>Qu’est-ce que l’ISBN ?</h2>
-    <p>
-      L’ISBN (International Standard Book Number) est un identifiant numérique unique attribué à chaque édition d’un livre.  
-      Il permet aux éditeurs, libraires, bibliothèques et lecteurs d’identifier précisément une publication.  
-      Un ISBN-13 est composé de cinq éléments : préfixe (978 ou 979), zone linguistique, éditeur, numéro de publication, et chiffre de contrôle.
-    </p>
-    <p style="font-size: 0.9em; color: #666;">
-      Source : <a href="https://www.afnil.org/isbn/" target="_blank">AFNIL – Agence francophone pour la numérotation internationale du livre</a>
-    </p>
-  </section>
-
-  <footer>
-    © 2025 Castillone. Tous droits réservés. Ce site est une réalisation personnelle à visée utilitaire.
-  </footer>
-
-  <script>
-    async function formaterISBN() {
-      const brut = document.getElementById("isbnFormat").value.replace(/[^0-9]/g, "");
-      const res = document.getElementById("resultatFormat");
-
-      if (brut.length !== 13) {
-        res.innerText = "ISBN invalide : il doit contenir exactement 13 chiffres.";
+    Quagga.init({
+      inputStream: {
+        name: "Live",
+        type: "LiveStream",
+        target: video
+      },
+      decoder: {
+        readers: ["ean_reader"] // ISBN-13 = EAN13
+      }
+    }, err => {
+      if (err) {
+        resultat.innerText = "Erreur caméra : " + err;
         return;
       }
+      Quagga.start();
+      resultat.innerText = "🔎 Scannez un code-barres (ISBN-13)";
+    });
 
-      const prefixe = brut.slice(0,3);
-      const zone = brut[3];
-      const editeur = brut.slice(4,9);
-      const publication = brut.slice(9,12);
-      const cle = brut[12];
-
-      res.innerHTML = `
-        <strong>ISBN formaté :</strong> ${prefixe}-${zone}-${editeur}-${publication}-${cle}<br><br>
-        <strong>Détail :</strong><br>
-        Préfixe : ${prefixe} — identifie le produit comme un livre (système GS1)<br>
-        Zone : ${zone} — zone francophone (France, Belgique, etc.)<br>
-        Éditeur : ${editeur} — code attribué à l’éditeur par l’AFNIL<br>
-        Publication : ${publication} — numéro unique de cette édition<br>
-        Clé de contrôle : ${cle} — chiffre calculé pour valider l’ISBN
-      `;
-
-      // Recherche automatique de métadonnées
-      try {
-        const response = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${brut}&format=json&jscmd=data`);
-        const data = await response.json();
-        const livre = data[`ISBN:${brut}`];
-
-        if (livre) {
-          const titre = livre.title || "Titre inconnu";
-          const auteurs = livre.authors ? livre.authors.map(a => a.name).join(", ") : "Auteur inconnu";
-          const editeurNom = livre.publishers ? livre.publishers.map(p => p.name).join(", ") : "Éditeur inconnu";
-          const date = livre.publish_date || "Date inconnue";
-          const couverture = livre.cover ? `<img src="${livre.cover.medium}" alt="Couverture du livre" style="margin-top:1em;max-width:200px;">` : "";
-
-          res.innerHTML += `
-            <br><br><strong>🔍 Résultat :</strong><br>
-            Titre : ${titre}<br>
-            Auteur(s) : ${auteurs}<br>
-            Éditeur : ${editeurNom}<br>
-            Date de publication : ${date}<br>
-            ${couverture}
-          `;
-        }
-      } catch (error) {
-        res.innerHTML += "<br><br>Impossible de récupérer les métadonnées.";
+    Quagga.onDetected(data => {
+      const isbn = data.codeResult.code;
+      if (/^97[89]\d{10}$/.test(isbn)) {
+        Quagga.stop();
+        video.style.display = "none";
+        resultat.innerText = "✅ ISBN détecté : " + isbn;
+        injectAndLaunch(isbn);
       }
-    }
+    });
+  }
 
-    async function rechercherLivre() {
-      const isbn = document.getElementById("isbnRecherche").value.replace(/[^0-9Xx]/g, "");
-      const res = document.getElementById("resultatRecherche");
-      res.innerHTML = "Recherche en cours…";
-
-      try {
-        const response = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`);
-        const data = await response.json();
-        const livre = data[`ISBN:${isbn}`];
-
-        if (!livre) {
-          res.innerHTML = `
-            Aucune information trouvée pour cet ISBN. La publication peut être récente ou encore en cours de dépôt.
-            <div style="margin-top:2em; text-align:center;">
-              <button onclick="ouvrirAutresBases('${isbn}')"
-                style="padding:0.6em 1em; background:#f0f0f0; border:none; font-size:1em; cursor:pointer;">
-                🔍
+  // Lorsqu'on dépose une image (OCR)
+  document.getElementById("imageInput").add
