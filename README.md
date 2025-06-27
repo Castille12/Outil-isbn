@@ -1,37 +1,61 @@
-Outil de formatage ISBN
+# ISBN – outil utilitaire par Castillone  
+📘 Français • [🇬🇧 English below](#isbn--utility-tool-by-castillone)
 
-Ce petit outil permet de formater un code ISBN-13 brut (avec ou sans tirets), et d’afficher ses blocs (préfixe, zone, éditeur, numéro, clé de contrôle). Il fonctionne directement dans le navigateur, sans collecte de données, ni connexion requise.
+Ce projet propose une interface typographique sobre pour faciliter la manipulation de codes ISBN-13.  
+Il comprend deux modules :
 
----
-
-Fonctionnalités
-
-- Nettoyage automatique des caractères inutiles
-- Vérification de la longueur (13 chiffres)
-- Découpage clair des segments d’un ISBN
-- Interface légère et responsive
+- **Formatage** : découpe d’un ISBN en segments lisibles (préfixe, zone, éditeur…)
+- **Recherche d’informations** : récupération automatique des métadonnées d’un ouvrage (titre, auteur, éditeur, couverture…)
 
 ---
 
-Mentions légales
+## Fonctionnalités
 
-© 2025 Castillone. Tous droits réservés.
-
-Ce projet est protégé par le droit d’auteur. Reproduction, modification ou distribution interdites sans autorisation.
-
-Le code est fourni à des fins d’affichage uniquement. Aucun usage commercial, intégration ou redistribution ne sont permis.
-
----
-
-Conditions d’utilisation
-
-- Le site ne collecte ni stocke aucune donnée.
-- L’utilisateur est responsable de l’usage des résultats produits.
-- L’outil est proposé à titre informatif uniquement, sans garantie d’exactitude absolue.
+- Vérification et formatage visuel d’un ISBN-13
+- Recherche via [OpenLibrary API](https://openlibrary.org/dev/docs/api/books)
+- En cas d’échec, liens directs vers d’autres sources :
+  - [Google Books](https://books.google.com)
+  - [WorldCat](https://www.worldcat.org)
+  - [SUDOC](https://www.sudoc.fr)
+  - [Gallica – BnF](https://gallica.bnf.fr)
+  - [Internet Archive](https://archive.org)
 
 ---
 
-Contact
+## Design
 
-Pour toute remarque, suggestion ou demande d’autorisation :  
-[castillone@live.fr]
+- Esthétique minimaliste et typographique
+- Typographie : *Space Grotesk*
+- Layout éditorial fluide et sans icônes
+
+---
+
+## Objectif
+
+Ce site est une réalisation personnelle, mise en ligne pour aider les utilisateurs confrontés aux mêmes besoins.  
+Créé par **Castillone**, dans un esprit de partage et d’utilité.
+
+---
+
+© 2025 Castillone. Tous droits réservés.  
+Utilisation non commerciale uniquement.
+
+---
+
+# ISBN – Utility Tool by Castillone  
+🇬🇧 English version • [🇫🇷 Version française above](#isbn--outil-utilitaire-par-castillone)
+
+This project offers a clean, editorial-style interface to process ISBN-13 codes efficiently.  
+It provides two tools:
+
+- **Formatting**: displays the internal structure of an ISBN
+- **Book Lookup**: fetches metadata (title, author, publisher, cover...)
+
+---
+
+## Features
+
+- ISBN-13 structure analysis
+- Metadata search via [OpenLibrary API](https://openlibrary.org/dev/docs/api/books)
+- Fallback links to additional sources:
+  - [Google Books](https://books.google.com
