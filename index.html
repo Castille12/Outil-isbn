@@ -4,121 +4,260 @@
   <meta charset="UTF-8" />
   <title>ISBN – Castillone</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <!-- Librairies pour OCR et scan -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.0.2/tesseract.min.js"></script>
   <script src="https://unpkg.com/@ericblade/quagga2/dist/quagga.js"></script>
-
   <style>
     body {
       font-family: 'Arial', sans-serif;
-      max-width: 600px;
+      max-width: 650px;
       margin: auto;
       padding: 2em;
       line-height: 1.6;
       background: #fff;
       color: #111;
     }
-
     h1, h2 {
       font-size: 1.5em;
       margin-top: 2em;
       text-align: center;
     }
-
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 1.5em;
+    }
     input, button {
       width: 100%;
       padding: 0.7em;
-      margin-top: 1em;
+      margin-top: 0.5em;
       font-size: 1em;
     }
-
     .resultat {
       background: #f5f5f5;
       padding: 1em;
       margin-top: 1em;
       border: 1px solid #ccc;
     }
-
     #previewImage {
       max-width: 100%;
       margin-top: 1em;
       border: 1px dashed #ccc;
       display: none;
     }
-
     #video {
       width: 100%;
       display: none;
       margin-top: 1em;
     }
-
     #scan-options {
       display: flex;
       flex-direction: column;
       gap: 1em;
       margin-top: 2em;
     }
-
     button:hover {
       background: #333;
       color: white;
       cursor: pointer;
     }
+    small {
+      color: #666;
+      font-size: 0.85em;
+    }
   </style>
 </head>
 <body>
 
-<h1>ISBN – Détection visuelle</h1>
+<h1>ISBN – Assistant visuel</h1>
 
 <div id="scan-options">
-  <button onclick="startScanner()">📷 Scanner un code-barres avec la caméra</button>
+  <button type="button" onclick="startScanner()">📷 Scanner un code-barres avec la caméra</button>
   <input type="file" id="imageInput" accept="image/*" />
+  <small>📌 Vous pouvez aussi glisser une photo contenant un ISBN imprimé ou un code-barres.</small>
 </div>
 
-<video id="video"></video>
-<img id="previewImage" alt="Prévisualisation" />
-
+<video id="video" autoplay></video>
+<img id="previewImage" alt="Prévisualisation de l’image scannée" />
 <div id="resultatVisuel" class="resultat"></div>
 
-<script>
-  const video = document.getElementById("video");
-  const previewImage = document.getElementById("previewImage");
-  const resultat = document.getElementById("resultatVisuel");
+<label for="isbnFormat">Entrer un ISBN à formater :</label>
+<input type="text" id="isbnFormat" placeholder="9782958563011" />
+<button type="button" onclick="formaterISBN()">Formater</button>
+<div id="resultatFormat" class="resultat"></div>
 
-  // Démarre le scanner avec QuaggaJS (caméra)
+<label for="isbnRecherche">Rechercher un livre :</label>
+<input type="text" id="isbnRecherche" placeholder="9782958563011" />
+<button type="button" onclick="rechercherLivre()">Rechercher</button>
+<div id="resultatRecherche" class="resultat"></div>
+
+<h2>À propos</h2>
+<div class="resultat">
+  <p>
+    Ce site vous permet de formater un ISBN, d’en comprendre la structure et de retrouver les métadonnées d’un ouvrage à partir de son code — même via caméra ou image.
+  </p>
+  <p style="font-size:0.9em; color:#666;">
+    © 2025 Castillone – Aucun suivi ni collecte.  
+    Basé sur OpenLibrary, QuaggaJS, Tesseract.js.  
+    Données complémentaires fournies à titre indicatif.
+  </p>
+</div>
+<script>
+  function formaterISBN() {
+    const brut = document.getElementById("isbnFormat").value.replace(/[^0-9]/g, "");
+    const res = document.getElementById("resultatFormat");
+    if (brut.length !== 13) {
+      res.innerHTML = "❌ ISBN invalide : il doit contenir exactement 13 chiffres.";
+      return;
+    }
+
+    const prefixe = brut.slice(0,3);
+    const zone = brut[3];
+    const editeur = brut.slice(4,9);
+    const publication = brut.slice(9,12);
+    const cle = brut[12];
+
+    const editeursConnus = {
+      "207": "Gallimard",
+      "201": "Hachette",
+      "226": "Pocket",
+      "229": "J'ai Lu",
+      "208": "Flammarion",
+      "275": "Actes Sud",
+      "74591": "Éditions Milan",
+      "97820": "Nathan",
+      "97823": "Albin Michel",
+      "27427": "Le Dilettante"
+    };
+
+    const nomEditeur = editeursConnus[editeur] || "";
+    res.innerHTML = `
+      <strong>ISBN formaté :</strong> ${prefixe}-${zone}-${editeur}-${publication}-${cle}<br><br>
+      <strong>Détail :</strong><br>
+      Préfixe : ${prefixe} — identifie un livre (système GS1)<br>
+      Zone : ${zone} — zone linguistique (ex : francophonie = 2)<br>
+      Éditeur : ${editeur}${nomEditeur ? ` — ${nomEditeur}` : ""} (code attribué à l’éditeur)<br>
+      Publication : ${publication} — numéro de l’édition<br>
+      Clé de contrôle : ${cle} — vérifie la validité du code
+    `;
+  }
+
+  async function rechercherLivre() {
+    const isbn = document.getElementById("isbnRecherche").value.replace(/[^0-9Xx]/g, "");
+    const res = document.getElementById("resultatRecherche");
+    res.innerHTML = "🔎 Recherche en cours…";
+
+    try {
+      const response = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`);
+      const data = await response.json();
+      const livre = data[`ISBN:${isbn}`];
+
+      if (!livre) {
+        res.innerHTML = `
+          Aucune information trouvée dans OpenLibrary.<br>
+          <button onclick="ouvrirAutresBases('${isbn}')">🔍 Vérifier sur d'autres bases</button>
+        `;
+        return;
+      }
+
+      const titre = livre.title || "<em>(Titre non renseigné)</em>";
+      const auteurs = livre.authors ? livre.authors.map(a => a.name).join(", ") : "<em>(Auteur inconnu)</em>";
+      const editeur = livre.publishers ? livre.publishers.map(p => p.name).join(", ") : "<em>(Éditeur non précisé)</em>";
+      const date = livre.publish_date || "<em>(Date non disponible)</em>";
+      const couverture = livre.cover ? `<img src="${livre.cover.medium}" alt="Couverture" style="margin-top:1em; max-width:200px;">` : "";
+
+      let score = 0;
+      if (livre.title) score++;
+      if (livre.authors) score++;
+      if (livre.publishers) score++;
+      if (livre.publish_date) score++;
+      if (livre.cover) score++;
+
+      res.innerHTML = `
+        <strong>Titre :</strong> ${titre}<br>
+        <strong>Auteur(s) :</strong> ${auteurs}<br>
+        <strong>Éditeur :</strong> ${editeur}<br>
+        <strong>Date de publication :</strong> ${date}<br>
+        ${couverture}
+        <br><br><em>Qualité des données : ${score}/5</em>
+        ${score < 3 ? `<br><br><button onclick="ouvrirAutresBases('${isbn}')">🔍 Vérifier sur d'autres bases</button>` : ""}
+      `;
+    } catch (e) {
+      res.innerHTML = "❌ Une erreur est survenue lors de la recherche.";
+    }
+  }
+
+  function ouvrirAutresBases(isbn) {
+    const urls = [
+      `https://books.google.com/books?vid=ISBN${isbn}`,
+      `https://www.worldcat.org/isbn/${isbn}`,
+      `https://gallica.bnf.fr/chercher?q=${isbn}`,
+      `https://www.sudoc.fr/${isbn}`,
+      `https://archive.org/search?query=isbn:${isbn}`
+    ];
+    urls.forEach(url => window.open(url, '_blank'));
+  }
+
   function startScanner() {
+    const video = document.getElementById("video");
+    const result = document.getElementById("resultatVisuel");
     video.style.display = "block";
-    resultat.innerText = "📷 Initialisation de la caméra…";
+    result.innerText = "📷 Initialisation de la caméra…";
 
     Quagga.init({
-      inputStream: {
-        name: "Live",
-        type: "LiveStream",
-        target: video
-      },
-      decoder: {
-        readers: ["ean_reader"] // ISBN-13 = EAN13
-      }
+      inputStream: { name: "Live", type: "LiveStream", target: video },
+      decoder: { readers: ["ean_reader"] }
     }, err => {
       if (err) {
-        resultat.innerText = "Erreur caméra : " + err;
+        result.innerText = "Erreur : " + err;
         return;
       }
       Quagga.start();
-      resultat.innerText = "🔎 Scannez un code-barres (ISBN-13)";
+      result.innerText = "🧠 Scannez un code-barres ISBN-13…";
     });
 
     Quagga.onDetected(data => {
-      const isbn = data.codeResult.code;
-      if (/^97[89]\d{10}$/.test(isbn)) {
+      const code = data.codeResult.code;
+      if (/^97[89]\d{10}$/.test(code)) {
         Quagga.stop();
         video.style.display = "none";
-        resultat.innerText = "✅ ISBN détecté : " + isbn;
-        injectAndLaunch(isbn);
+        result.innerText = `✅ ISBN détecté : ${code}`;
+        injectAndSearch(code);
       }
     });
   }
 
-  // Lorsqu'on dépose une image (OCR)
-  document.getElementById("imageInput").add
+  document.getElementById("imageInput").addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = event => {
+      const img = document.getElementById("previewImage");
+      img.src = event.target.result;
+      img.style.display = "block";
+      const result = document.getElementById("resultatVisuel");
+      result.innerText = "🧠 Lecture OCR en cours…";
+
+      Tesseract.recognize(event.target.result, 'eng+fra')
+        .then(({ data: { text } }) => {
+          const match = text.match(/97[89][\d\s\-]{10,}/);
+          if (match) {
+            const isbn = match[0].replace(/\D/g, "").slice(0,13);
+            result.innerText = "✅ ISBN extrait : " + isbn;
+            injectAndSearch(isbn);
+          } else {
+            result.innerText = "❌ Aucun ISBN valide détecté.";
+          }
+        });
+    };
+    reader.readAsDataURL(file);
+  });
+
+  function injectAndSearch(isbn) {
+    document.getElementById("isbnFormat").value = isbn;
+    document.getElementById("isbnRecherche").value = isbn;
+    formaterISBN();
+    rechercherLivre();
+  }
+</script>
+</body>
+</html>
