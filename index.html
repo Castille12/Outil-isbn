@@ -2,67 +2,114 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Formatteur ISBN</title>
+  <title>Format ISBN – Castillone</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: sans-serif;
-      background: #f2f5fa;
-      text-align: center;
-      padding: 3em;
+      margin: 0;
+      padding: 4em 1em;
+      background-color: #ffffff;
+      font-family: 'Space Grotesk', sans-serif;
+      color: #111;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.6;
     }
-    input, button {
-      font-size: 1.2em;
-      padding: 0.6em;
-      margin: 0.5em;
+
+    h1 {
+      font-size: 2em;
+      font-weight: 600;
+      margin-bottom: 0.5em;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
-    .resultat {
-      margin-top: 1em;
+
+    p {
       font-size: 1.1em;
-      background: white;
-      padding: 1em;
-      border-radius: 6px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-      display: inline-block;
+      margin-bottom: 2em;
+    }
+
+    input, button {
+      font-size: 1em;
+      padding: 0.6em 1em;
+      border: 1px solid #ccc;
+      border-radius: 0;
+      margin-bottom: 1em;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: #111;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #333;
+    }
+
+    .resultat {
+      margin-top: 2em;
+      background: #f7f7f7;
+      padding: 1.5em;
+      font-size: 1em;
+      border: 1px solid #e0e0e0;
+    }
+
+    footer {
+      margin-top: 4em;
+      font-size: 0.9em;
+      color: #666;
+      text-align: left;
+      border-top: 1px solid #eee;
+      padding-top: 1em;
     }
   </style>
 </head>
 <body>
-  <h1>🔢 Format ISBN</h1>
-  <p>Colle ton ISBN brut (13 chiffres) :</p>
-  <input type="text" id="isbn" placeholder="ex. 9782958563011" />
+  <h1>Format ISBN</h1>
+  <p>Entrez un code ISBN-13 pour le formater et visualiser sa structure.</p>
+
+  <input type="text" id="isbn" placeholder="9782958563011" />
   <button onclick="formaterISBN()">Formater</button>
 
   <div id="resultat" class="resultat"></div>
 
   <script>
     function formaterISBN() {
-      let brut = document.getElementById("isbn").value.replace(/[^0-9]/g, "");
+      const brut = document.getElementById("isbn").value.replace(/[^0-9]/g, "");
+      const res = document.getElementById("resultat");
+
       if (brut.length !== 13) {
-        document.getElementById("resultat").innerText = "❌ ISBN invalide : il faut 13 chiffres.";
+        res.innerText = "ISBN invalide : il doit contenir exactement 13 chiffres.";
         return;
       }
 
-      // Découpe personnalisable
-      let prefixe = brut.slice(0,3);
-      let zone = brut[3];
-      let editeur = brut.slice(4,9); // ← ajuste ici selon ton bloc réel
-      let publication = brut.slice(9,12);
-      let cle = brut[12];
+      const prefixe = brut.slice(0,3);
+      const zone = brut[3];
+      const editeur = brut.slice(4,9);
+      const publication = brut.slice(9,12);
+      const cle = brut[12];
 
-      let isbn_formate = `${prefixe}-${zone}-${editeur}-${publication}-${cle}`;
-      document.getElementById("resultat").innerHTML =
-        `<strong>ISBN formaté :</strong> ${isbn_formate}<br />
-         <strong>Blocs :</strong><br />
-         Préfixe : ${prefixe}<br />
-         Zone : ${zone}<br />
-         Éditeur : ${editeur}<br />
-         Publication : ${publication}<br />
-         Clé : ${cle}`;
+      res.innerHTML = `
+        <strong>ISBN formaté :</strong> ${prefixe}-${zone}-${editeur}-${publication}-${cle}<br><br>
+        <strong>Détail :</strong><br>
+        Préfixe : ${prefixe}<br>
+        Zone : ${zone}<br>
+        Éditeur : ${editeur}<br>
+        Publication : ${publication}<br>
+        Clé : ${cle}
+      `;
     }
   </script>
 
-  <footer style="margin-top:3em; font-size: 0.9em; color:#666;">
-    Outil ISBN par [Ton nom ou pseudo] – Projet personnel ✍️
+  <footer>
+    © 2025 Castillone. Tous droits réservés. Ce site est une réalisation personnelle.
   </footer>
 </body>
 </html>
