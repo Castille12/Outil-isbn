@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <title>ISBN – Castillone</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
   <style>
     @font-face {
       font-family: 'Futura';
@@ -66,20 +65,7 @@
       padding: 1.5em;
       font-size: 1em;
       border: 1px solid #e0e0e0;
-      margin-bottom: 2em;
-    }
-
-    .liens-supplementaires {
-      margin-top: 1em;
-      font-size: 0.95em;
-      color: #444;
-    }
-
-    .liens-supplementaires a {
-      display: block;
-      margin-top: 0.3em;
-      color: #111;
-      text-decoration: underline;
+      margin-bottom: 2.5em;
     }
 
     .isbn-info {
@@ -143,6 +129,10 @@
     </p>
   </section>
 
+  <footer>
+    © 2025 Castillone. Tous droits réservés. Ce site est une réalisation personnelle à visée utilitaire.
+  </footer>
+
   <script>
     function formaterISBN() {
       const brut = document.getElementById("isbnFormat").value.replace(/[^0-9]/g, "");
@@ -162,11 +152,11 @@
       res.innerHTML = `
         <strong>ISBN formaté :</strong> ${prefixe}-${zone}-${editeur}-${publication}-${cle}<br><br>
         <strong>Détail :</strong><br>
-        Préfixe : ${prefixe}<br>
-        Zone : ${zone}<br>
-        Éditeur : ${editeur}<br>
-        Publication : ${publication}<br>
-        Clé de contrôle : ${cle}
+        Préfixe : ${prefixe} — identifie le produit comme un livre (système GS1)<br>
+        Zone : ${zone} — zone francophone (France, Belgique, etc.)<br>
+        Éditeur : ${editeur} — code attribué à l’éditeur par l’AFNIL<br>
+        Publication : ${publication} — numéro unique de cette édition<br>
+        Clé de contrôle : ${cle} — chiffre calculé pour valider l’ISBN
       `;
     }
 
@@ -183,13 +173,11 @@
         if (!livre) {
           res.innerHTML = `
             Aucune information trouvée pour cet ISBN. La publication peut être récente ou encore en cours de dépôt.
-            <div class="liens-supplementaires">
-              Vous pouvez essayer sur d’autres bases :
-              <a href="https://books.google.com/books?vid=ISBN${isbn}" target="_blank">Google Books</a>
-              <a href="https://www.worldcat.org/isbn/${isbn}" target="_blank">WorldCat</a>
-              <a href="https://www.sudoc.fr/${isbn}" target="_blank">SUDOC</a>
-              <a href="https://gallica.bnf.fr/chercher?q=${isbn}" target="_blank">Gallica</a>
-              <a href="https://archive.org/search?query=isbn:${isbn}" target="_blank">Internet Archive</a>
+            <div style="margin-top:2em; text-align:center;">
+              <button onclick="ouvrirAutresBases('${isbn}')"
+                style="padding:0.6em 1em; background:#f0f0f0; border:none; font-size:1em; cursor:pointer;">
+                🔍 Vérifier sur d'autres bases
+              </button>
             </div>
           `;
           return;
@@ -212,6 +200,18 @@
         res.innerHTML = "Erreur lors de la récupération des données.";
       }
     }
-  </script>
 
-  <footer
+    function ouvrirAutresBases(isbn) {
+      const liens = [
+        `https://books.google.com/books?vid=ISBN${isbn}`,
+        `https://www.worldcat.org/isbn/${isbn}`,
+        `https://www.sudoc.fr/${isbn}`,
+        `https://gallica.bnf.fr/chercher?q=${isbn}`,
+        `https://archive.org/search?query=isbn:${isbn}`
+      ];
+
+      liens.forEach(url => window.open(url, '_blank'));
+    }
+  </script>
+</body>
+</html>
