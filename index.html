@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Format ISBN – Castillone</title>
+  <title>ISBN – Castillone</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
   <style>
@@ -24,6 +24,15 @@
       margin-bottom: 0.5em;
       text-transform: uppercase;
       letter-spacing: 0.05em;
+    }
+
+    h2 {
+      font-size: 1.2em;
+      font-weight: 600;
+      margin-top: 3em;
+      margin-bottom: 0.5em;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
     }
 
     p {
@@ -54,7 +63,7 @@
     }
 
     .resultat {
-      margin-top: 2em;
+      margin-top: 1.5em;
       background: #f7f7f7;
       padding: 1.5em;
       font-size: 1em;
@@ -73,17 +82,25 @@
 </head>
 <body>
   <h1>Format ISBN</h1>
-  <p>Entrez un code ISBN-13 pour le formater et visualiser sa structure.</p>
+  <p>Découpez un code ISBN-13 en segments lisibles.</p>
 
-  <input type="text" id="isbn" placeholder="9782958563011" />
+  <input type="text" id="isbnFormat" placeholder="9782958563011" />
   <button onclick="formaterISBN()">Formater</button>
 
-  <div id="resultat" class="resultat"></div>
+  <div id="resultatFormat" class="resultat"></div>
+
+  <h2>Recherche d’informations</h2>
+  <p>Obtenez les détails d’un livre à partir de son ISBN.</p>
+
+  <input type="text" id="isbnRecherche" placeholder="9782958563011" />
+  <button onclick="rechercherLivre()">Rechercher</button>
+
+  <div id="resultatRecherche" class="resultat"></div>
 
   <script>
     function formaterISBN() {
-      const brut = document.getElementById("isbn").value.replace(/[^0-9]/g, "");
-      const res = document.getElementById("resultat");
+      const brut = document.getElementById("isbnFormat").value.replace(/[^0-9]/g, "");
+      const res = document.getElementById("resultatFormat");
 
       if (brut.length !== 13) {
         res.innerText = "ISBN invalide : il doit contenir exactement 13 chiffres.";
@@ -106,10 +123,43 @@
         Clé : ${cle}
       `;
     }
+
+    async function rechercherLivre() {
+      const isbn = document.getElementById("isbnRecherche").value.replace(/[^0-9Xx]/g, "");
+      const res = document.getElementById("resultatRecherche");
+      res.innerHTML = "Recherche en cours…";
+
+      try {
+        const response = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`);
+        const data = await response.json();
+        const livre = data[`ISBN:${isbn}`];
+
+        if (!livre) {
+          res.innerHTML = "Aucune information trouvée pour cet ISBN. La publication peut être récente ou encore en cours de dépôt.";
+          return;
+        }
+
+        const titre = livre.title || "Titre inconnu";
+        const auteurs = livre.authors ? livre.authors.map(a => a.name).join(", ") : "Auteur inconnu";
+        const editeur = livre.publishers ? livre.publishers.map(p => p.name).join(", ") : "Éditeur inconnu";
+        const date = livre.publish_date || "Date inconnue";
+        const couverture = livre.cover ? `<img src="${livre.cover.medium}" alt="Couverture du livre" style="margin-top:1em;max-width:200px;">` : "";
+
+        res.innerHTML = `
+          <strong>Titre :</strong> ${titre}<br>
+          <strong>Auteur(s) :</strong> ${auteurs}<br>
+          <strong>Éditeur :</strong> ${editeur}<br>
+          <strong>Date de publication :</strong> ${date}<br>
+          ${couverture}
+        `;
+      } catch (error) {
+        res.innerHTML = "Erreur lors de la récupération des données.";
+      }
+    }
   </script>
 
   <footer>
-    © 2025 Castillone. Tous droits réservés. Ce site est une réalisation personnelle.
+    © 2025 Castillone. Tous droits réservés. Ce site est une réalisation personnelle à visée utilitaire.
   </footer>
 </body>
 </html>
