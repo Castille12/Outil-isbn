@@ -68,6 +68,11 @@
       margin-bottom: 2.5em;
     }
 
+    .resultat-contraste {
+      background: #eef2f5;
+      border: 1px solid #ccd5db;
+    }
+
     .isbn-info {
       margin-top: 4em;
       font-size: 1em;
@@ -101,12 +106,12 @@
 
   <img src="LogoISBN_1.svg" alt="Logo ISBN – Formateur" class="logo">
   <h1>Format ISBN</h1>
-  <p>Ce module vous permet de visualiser la structure d’un code ISBN-13 en le découpant en segments lisibles.</p>
+  <p>Ce module vous permet de visualiser la structure d’un code ISBN-13 en le découpant en segments lisibles, avec explication et métadonnées si disponibles.</p>
 
   <input type="text" id="isbnFormat" placeholder="9782958563011" />
   <button onclick="formaterISBN()">Formater</button>
 
-  <div id="resultatFormat" class="resultat"></div>
+  <div id="resultatFormat" class="resultat resultat-contraste"></div>
 
   <img src="LogoISBN.svg" alt="Logo ISBN – Recherche" class="logo">
   <h2>Recherche d’informations</h2>
@@ -134,7 +139,7 @@
   </footer>
 
   <script>
-    function formaterISBN() {
+    async function formaterISBN() {
       const brut = document.getElementById("isbnFormat").value.replace(/[^0-9]/g, "");
       const res = document.getElementById("resultatFormat");
 
@@ -158,6 +163,32 @@
         Publication : ${publication} — numéro unique de cette édition<br>
         Clé de contrôle : ${cle} — chiffre calculé pour valider l’ISBN
       `;
+
+      // Recherche automatique de métadonnées
+      try {
+        const response = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${brut}&format=json&jscmd=data`);
+        const data = await response.json();
+        const livre = data[`ISBN:${brut}`];
+
+        if (livre) {
+          const titre = livre.title || "Titre inconnu";
+          const auteurs = livre.authors ? livre.authors.map(a => a.name).join(", ") : "Auteur inconnu";
+          const editeurNom = livre.publishers ? livre.publishers.map(p => p.name).join(", ") : "Éditeur inconnu";
+          const date = livre.publish_date || "Date inconnue";
+          const couverture = livre.cover ? `<img src="${livre.cover.medium}" alt="Couverture du livre" style="margin-top:1em;max-width:200px;">` : "";
+
+          res.innerHTML += `
+            <br><br><strong>🔍 Résultat :</strong><br>
+            Titre : ${titre}<br>
+            Auteur(s) : ${auteurs}<br>
+            Éditeur : ${editeurNom}<br>
+            Date de publication : ${date}<br>
+            ${couverture}
+          `;
+        }
+      } catch (error) {
+        res.innerHTML += "<br><br>Impossible de récupérer les métadonnées.";
+      }
     }
 
     async function rechercherLivre() {
@@ -176,42 +207,4 @@
             <div style="margin-top:2em; text-align:center;">
               <button onclick="ouvrirAutresBases('${isbn}')"
                 style="padding:0.6em 1em; background:#f0f0f0; border:none; font-size:1em; cursor:pointer;">
-                🔍 Vérifier sur d'autres bases
-              </button>
-            </div>
-          `;
-          return;
-        }
-
-        const titre = livre.title || "Titre inconnu";
-        const auteurs = livre.authors ? livre.authors.map(a => a.name).join(", ") : "Auteur inconnu";
-        const editeur = livre.publishers ? livre.publishers.map(p => p.name).join(", ") : "Éditeur inconnu";
-        const date = livre.publish_date || "Date inconnue";
-        const couverture = livre.cover ? `<img src="${livre.cover.medium}" alt="Couverture du livre" style="margin-top:1em;max-width:200px;">` : "";
-
-        res.innerHTML = `
-          <strong>Titre :</strong> ${titre}<br>
-          <strong>Auteur(s) :</strong> ${auteurs}<br>
-          <strong>Éditeur :</strong> ${editeur}<br>
-          <strong>Date de publication :</strong> ${date}<br>
-          ${couverture}
-        `;
-      } catch (error) {
-        res.innerHTML = "Erreur lors de la récupération des données.";
-      }
-    }
-
-    function ouvrirAutresBases(isbn) {
-      const liens = [
-        `https://books.google.com/books?vid=ISBN${isbn}`,
-        `https://www.worldcat.org/isbn/${isbn}`,
-        `https://www.sudoc.fr/${isbn}`,
-        `https://gallica.bnf.fr/chercher?q=${isbn}`,
-        `https://archive.org/search?query=isbn:${isbn}`
-      ];
-
-      liens.forEach(url => window.open(url, '_blank'));
-    }
-  </script>
-</body>
-</html>
+                🔍
